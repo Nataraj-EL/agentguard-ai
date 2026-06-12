@@ -21,12 +21,12 @@ AgentGuard AI is structured as a decoupled, local-first runtime monitoring suite
 
 ```mermaid
 graph TD
-    subgraph Developer Host
+    subgraph DeveloperHost [Developer Host]
         Trap[Shell Trap & Shim]
         Watcher[Watcher Daemon]
         Dashboard[Web Dashboard]
         
-        subgraph Core Engine [Spring Boot Core Backend]
+        subgraph CoreEngine [Spring Boot Core Backend]
             Policy[Policy Engine]
             Tracker[Identity Tracker]
             Graph[Causal Graph Service]
@@ -41,7 +41,7 @@ graph TD
     Policy -->|3. Record Event| Forensic
     Graph -->|4. Link Event| Forensic
     Forensic -->|5. JPA Pre-Hooks| DB
-    Dashboard -->|6. Query Stats & Logs| Core Engine
+    Dashboard -->|6. Query Stats & Logs| Policy
 ```
 
 ### Core Components
@@ -76,7 +76,7 @@ sequenceDiagram
     activate Backend
     Backend->>Backend: Verify HMAC Signature & User-Device-Agent Identity
     Backend->>Backend: Secret Scan & Policy Scoring (Risk Calculation)
-    Backend-->>Shell: Response: REJECTED (Reason: Force push blocked)
+    Backend-->>Shell: "Response: REJECTED (Reason: Force push blocked)"
     deactivate Shell
     
     Backend->>DB: Save Activity Log (REJECTED) & Forensic Event Entry
@@ -94,14 +94,17 @@ sequenceDiagram
 2. **Identity Authentication**: The token is validated using HMAC-SHA256. The server extracts the `User-Device-Agent` composite identifier. If signature validation fails, execution is blocked immediately.
 3. **Secret Scan (Secret Sentinel)**: The command string is scanned for high-entropy structures (Stripe keys, AWS tokens, private certs). If detected, validation aborts instantly, logging a high-risk infraction.
 4. **Policy Engine Score**: The engine evaluates the command risk based on deterministic rules and context. The final risk score is computed:
-   $$\text{Risk} = \text{BaseRuleRisk}(40\%) + \text{ContextRisk}(40\%) + \text{AnomalyRisk}(20\%) - \text{TrustAdjustment}$$
+   
+   `Risk = BaseRuleRisk(40%) + ContextRisk(40%) + AnomalyRisk(20%) - TrustAdjustment`
+   
 5. **Decision & Response**: Based on the governance profile (`CONSERVATIVE`, `BALANCED`, or `AGGRESSIVE`), the system outputs `APPROVED`, `REVIEW`, or `REJECTED`. The decision is returned to the shell trap in under 10ms.
 6. **Asynchronous Telemetry Correlation**: Simultaneously, the Node.js watcher daemon detects corresponding file changes, queues them, and dispatches them asynchronously to `/api/v1/events/telemetry`. The correlation engine links the files to the parent command based on timestamp windows and session ID.
 
 ### Cryptographic Security Model
 
 Sessions are established via a composite token mapping format:
-$$\text{Token} = \text{Base64}(\text{user\_id} : \text{device\_id} : \text{agent\_id}) \ . \ \text{Base64}(\text{HMAC-SHA256}(\text{payload}, \text{secret}))$$
+
+`Token = Base64(user_id : device_id : agent_id) . Base64(HMAC-SHA256(payload, secret))`
 
 The backend uses a cryptographically secure runtime key to sign the token. This prevents agents from spoofing identity parameters or bypassing validation shims using fake session headers.
 
