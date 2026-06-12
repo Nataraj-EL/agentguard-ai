@@ -1,0 +1,48 @@
+#!/bin/bash
+REAL_NPM=$(which -a npm | grep -v "agentguard" | head -n1)
+# Fallback to standard path if which search is empty or circular
+if [ -z "$REAL_NPM" ]; then
+  REAL_NPM="/home/nataraj/.nvm/versions/node/v22.22.3/bin/npm"
+fi
+
+COMMAND_STRING="npm $*"
+
+# Extract session identity from environment
+SESSION_ID="${AGENTGUARD_SESSION_ID:-development-human}"
+
+# Query the Fast-Path Validation API
+RESPONSE_JSON=$(curl -s -w "\\n%{http_code}" -X POST \
+  -H "Content-Type: application/json" \
+  -H "X-Session-ID: $SESSION_ID" \
+  -d "{\"command\":\"$COMMAND_STRING\"}" \
+  http://localhost:8080/api/v1/commands/validate-fast 2>/dev/null)
+
+# Fallback immediately to standard execution if backend is offline or errors
+if [ $? -ne 0 ] || [ -z "$RESPONSE_JSON" ]; then
+  exec "$REAL_NPM" "$@"
+fi
+
+HTTP_STATUS=$(echo "$RESPONSE_JSON" | tail -n1)
+DECISION_BODY=$(echo "$RESPONSE_JSON" | sed '$d')
+
+# Handle fast decisions
+if [ "$HTTP_STATUS" -eq 200 ]; then
+  DECISION=$(echo "$DECISION_BODY" | grep -o '"decision":"[^"]*' | grep -o '[^"]*$')
+  MESSAGE=$(echo "$DECISION_BODY" | grep -o '"message":"[^"]*' | grep -o '[^"]*$')
+  
+  if [ "$DECISION" = "APPROVED" ]; then
+    exec "$REAL_NPM" "$@"
+  elif [ "$DECISION" = "REJECTED" ]; then
+    echo ""
+    echo "❌ [AgentGuard] BLOCKED: Command violates active safety policies."
+    echo "   Reason: $MESSAGE"
+    echo ""
+    exit 1
+  elif [ "$DECISION" = "REVIEW" ]; then
+    echo "⚠️ [AgentGuard] WARNING: Command is under review: $MESSAGE"
+    exec "$REAL_NPM" "$@"
+  fi
+fi
+
+# Default safety fallback
+exec "$REAL_NPM" "$@"

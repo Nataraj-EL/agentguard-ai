@@ -1,0 +1,18 @@
+# AgentGuard AI - Dynamic Enterprise Governance Policy Template
+
+rules:
+  - id: "destructive_rm"
+    action: "REJECTED"
+    match: "rm -rf"
+
+  - id: "force_push_block"
+    action: "REJECTED"
+    match: "git push --force"
+
+  - id: "schema_drop"
+    action: "REJECTED"
+    match: "drop database"
+
+  - id: "secrets_leak_alert"
+    action: "REVIEW"
+    match: "cat .env"

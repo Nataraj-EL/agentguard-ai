@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentGuard - Governance Ledger Portal</title>
+    <!-- Ingest Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0b0c;
+            --card-bg: #161617;
+            --border-color: rgba(234, 234, 234, 0.08);
+            
+            --text-primary: #eaeaea;
+            --text-secondary: rgba(234, 234, 234, 0.6);
+            --text-muted: rgba(234, 234, 234, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            justify-content: center;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+        }
+
+        .brand-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(234, 234, 234, 0.06);
+            color: var(--text-secondary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .brand p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            letter-spacing: 0.02em;
+        }
+
+        .session-selector-panel {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .session-selector-panel:hover {
+            border-color: rgba(234, 234, 234, 0.2);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .session-selector-panel label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+        }
+
+        .session-selector-panel select {
+            background: transparent;
+            color: var(--text-primary);
+            border: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+            padding-right: 1.5rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23eaeaea'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right center;
+            background-size: 0.85rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .metric-card:hover {
+            border-color: rgba(234, 234, 234, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .metric-card span {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.35rem;
+        }
+
+        .metric-card .value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-card .desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1.7fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .panel:hover {
+            border-color: rgba(234, 234, 234, 0.18);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .section-header {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timeline-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .timeline-item {
+            padding: 0.85rem 1rem;
+            background: rgba(234, 234, 234, 0.01);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1.5rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .timeline-item:hover {
+            background: rgba(234, 234, 234, 0.03);
+            border-color: rgba(234, 234, 234, 0.15);
+        }
+
+        .item-info {
+            max-width: 78%;
+        }
+
+        .item-info h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            word-break: break-all;
+        }
+
+        .item-info p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid rgba(234, 234, 234, 0.2);
+            color: var(--text-primary);
+            background: rgba(234, 234, 234, 0.04);
+            white-space: nowrap;
+        }
+
+        .dag-tree {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            line-height: 2;
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            padding: 1rem 1.25rem;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        .dag-root {
+            font-weight: 600;
+            color: var(--text-primary);
+            border-left: 2px solid rgba(234, 234, 234, 0.4);
+            padding-left: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .dag-node {
+            display: block;
+            color: var(--text-secondary);
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .dag-node-type {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            margin: 0 0.4rem;
+            background: rgba(234, 234, 234, 0.06);
+            color: var(--text-secondary);
+            border: 1px solid rgba(234, 234, 234, 0.15);
+        }
+
+        .agent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .agent-item {
+            background: rgba(234, 234, 234, 0.01);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.85rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .agent-item:hover {
+            background: rgba(234, 234, 234, 0.03);
+            border-color: rgba(234, 234, 234, 0.15);
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .agent-details h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .agent-details span {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .trust-score-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .trust-score-bar-bg {
+            flex-grow: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .trust-score-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background-color: rgba(234, 234, 234, 0.85);
+            transition: width 0.4s ease;
+        }
+
+        .trust-score-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            width: 2.5rem;
+            text-align: right;
+            color: var(--text-primary);
+        }
+
+        .config-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .config-row:last-child {
+            border-bottom: none;
+        }
+
+        .config-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .config-value {
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        .config-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            background: rgba(234, 234, 234, 0.06);
+            color: var(--text-primary);
+            border: 1px solid rgba(234, 234, 234, 0.15);
+        }
+
+        .correlation-body {
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1.25rem;
+        }
+
+        .correlation-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .correlation-narrative {
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            border-left: 2px solid rgba(234, 234, 234, 0.4);
+            padding-left: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .correlation-actions-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .correlation-action-item {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            background: rgba(234, 234, 234, 0.01);
+            border: 1px solid var(--border-color);
+            padding: 0.35rem 0.65rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .correlation-action-item::before {
+            content: "•";
+            color: rgba(234, 234, 234, 0.6);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="brand">
+                <div class="brand-title-group">
+                    <h1>AgentGuard</h1>
+                    <span class="brand-badge">Governance</span>
+                </div>
+                <p>Enterprise AI Agent Policy & Session Ledger Portal</p>
+            </div>
+            
+            <div class="session-selector-panel">
+                <label for="session-select">Active Session:</label>
+                <select id="session-select">
+                    <option value="">-- Active / Development --</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="metrics-grid">
+            <div class="metric-card total">
+                <span>Ingested Actions</span>
+                <div class="value" id="metric-total">0</div>
+                <div class="desc">Cumulative validated actions</div>
+            </div>
+            <div class="metric-card blocked">
+                <span>Blocks Executed</span>
+                <div class="value" id="metric-blocked">0</div>
+                <div class="desc">Prevented policy infractions</div>
+            </div>
+            <div class="metric-card telemetry">
+                <span>Telemetry Events</span>
+                <div class="value" id="metric-telemetry">0</div>
+                <div class="desc">Ingested watcher file changes</div>
+            </div>
+            <div class="metric-card latency">
+                <span>Latency SLA</span>
+                <div class="value" id="metric-latency">0.00 ms</div>
+                <div class="desc">Average evaluation loop speed</div>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <div>
+                <div class="panel">
+                    <div class="section-header">Active Execution Logs</div>
+                    <div class="timeline-list" id="timeline-list">
+                        <div class="timeline-item">
+                            <div class="item-info">
+                                <h4>System initialization</h4>
+                                <p>AgentGuard AI engine boot completed successfully. Active traps armed.</p>
+                            </div>
+                            <span class="status-badge">System</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="section-header">Causal Event DAG Representation</div>
+                    <div class="dag-tree" id="dag-tree">
+                        <div style="font-size: 0.75rem; opacity: 0.5;">No active session selected. Select a session above to view its causal DAG.</div>
+                    </div>
+                </div>
+
+                <div class="panel" id="correlation-panel" style="display: none;">
+                    <div class="section-header">Prompt-to-Action Correlation</div>
+                    <div class="correlation-body">
+                        <span class="correlation-title">Impact Narrative summary</span>
+                        <p id="correlation-summary" class="correlation-narrative"></p>
+                        
+                        <span class="correlation-title">Attributed executions</span>
+                        <ul id="correlation-actions" class="correlation-actions-list"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="section-header">Attributed Identities</div>
+                    <div class="agent-list" id="agent-list">
+                        <!-- Attributed identities rendered dynamically -->
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="section-header">Active Safety Configuration</div>
+                    <div class="config-list">
+                        <div class="config-row">
+                            <span class="config-label">Governance Profile</span>
+                            <span id="config-profile" class="config-value">-</span>
+                        </div>
+                        <div class="config-row">
+                            <span class="config-label">Policy Ingress</span>
+                            <span id="config-ingress" class="config-value">-</span>
+                        </div>
+                        <div class="config-row">
+                            <span class="config-label">Storage Mode</span>
+                            <span id="config-storage" class="config-value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionsList = [];
+        let configLoaded = false;
+
+        function loadConfig() {
+            fetch('/api/v1/config')
+                .then(res => res.json())
+                .then(data => {
+                    const profile = data.profile || 'BALANCED';
+                    document.getElementById('config-profile').innerHTML = `<span class="config-badge">${profile}</span>`;
+                    document.getElementById('config-ingress').innerText = data.policyIngress || '-';
+                    document.getElementById('config-storage').innerText = data.storageMode || '-';
+                    configLoaded = true;
+                }).catch(() => {});
+        }
+
+        function syncDashboard() {
+            if (!configLoaded) {
+                loadConfig();
+            }
+
+            fetch('/api/v1/metrics')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('metric-total').innerText = data.total_commands || 0;
+                    document.getElementById('metric-blocked').innerText = data.blocked_commands || 0;
+                    document.getElementById('metric-telemetry').innerText = data.total_telemetry_events || 0;
+                    document.getElementById('metric-latency').innerText = (data.avg_validation_latency_ms || 0.00).toFixed(2) + " ms";
+                }).catch(() => {});
+
+            fetch('/api/v1/events')
+                .then(res => res.json())
+                .then(events => {
+                    if (events && events.length > 0) {
+                        const listHtml = events.map(e => {
+                            return `
+                                <div class="timeline-item">
+                                    <div class="item-info">
+                                        <h4>${escapeHtml(e.actionName)}</h4>
+                                        <p>${escapeHtml(e.details || 'No trace explanation')}</p>
+                                    </div>
+                                    <span class="status-badge">${e.status}</span>
+                                </div>
+                            `;
+                        }).join('');
+                        document.getElementById('timeline-list').innerHTML = listHtml;
+                    } else {
+                        document.getElementById('timeline-list').innerHTML = `
+                            <div class="timeline-item">
+                                <div class="item-info">
+                                    <h4>System initialization</h4>
+                                    <p>AgentGuard AI engine boot completed successfully. Active traps armed.</p>
+                                </div>
+                                <span class="status-badge">System</span>
+                            </div>
+                        `;
+                    }
+                }).catch(() => {});
+
+            // Fetch Attributed Identities
+            fetch('/api/v1/identities')
+                .then(res => res.json())
+                .then(identities => {
+                    const agentList = document.getElementById('agent-list');
+                    if (!identities || identities.length === 0) {
+                        agentList.innerHTML = '<div style="font-size: 0.75rem; opacity: 0.5; padding: 0.5rem 0;">No active AI agents detected.</div>';
+                        return;
+                    }
+
+                    const aiAgents = identities.filter(id => id.agentType !== 'TERMINAL_USER');
+
+                    let html = '';
+                    identities.forEach(id => {
+                        const trustScore = id.trustScore;
+                        const scorePct = (trustScore * 100).toFixed(0) + "%";
+                        
+                        html += `
+                            <div class="agent-item">
+                                <div class="agent-header">
+                                    <div class="agent-details">
+                                        <h4>${escapeHtml(id.agentId)}</h4>
+                                        <span>${escapeHtml(id.agentType)}</span>
+                                    </div>
+                                </div>
+                                <div class="trust-score-container">
+                                    <div class="trust-score-bar-bg">
+                                        <div class="trust-score-bar-fill" style="width: ${scorePct};"></div>
+                                    </div>
+                                    <div class="trust-score-value">${scorePct}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    if (aiAgents.length === 0) {
+                        html += `<div style="font-size: 0.75rem; opacity: 0.5; padding: 0.5rem 0; border-top: 1px solid var(--border-color); font-style: italic; text-align: center;">No active AI agents detected.</div>`;
+                    }
+
+                    agentList.innerHTML = html;
+                }).catch(() => {});
+
+            // Fetch Sessions list to populate dropdown
+            fetch('/api/v1/sessions')
+                .then(res => res.json())
+                .then(sessions => {
+                    const select = document.getElementById('session-select');
+                    const currentValue = select.value;
+                    
+                    const serialized = sessions.map(s => s.id + ":" + s.status).join(",");
+                    const oldSerialized = sessionsList.map(s => s.id + ":" + s.status).join(",");
+                    
+                    if (serialized !== oldSerialized) {
+                        sessionsList = sessions;
+                        
+                        select.innerHTML = '<option value="">-- Active / Development --</option>';
+                        sessions.forEach(s => {
+                            const option = document.createElement('option');
+                            option.value = s.id;
+                            option.text = `${s.prompt.substring(0, 30)}${s.prompt.length > 30 ? '...' : ''} (${s.status})`;
+                            select.appendChild(option);
+                        });
+                        
+                        if (sessions.some(s => s.id === currentValue)) {
+                            select.value = currentValue;
+                        }
+                    }
+                }).catch(() => {});
+
+            // Sync Selected Session Details
+            const selectedSessionId = document.getElementById('session-select').value;
+            if (selectedSessionId) {
+                // Fetch graph links
+                Promise.all([
+                    fetch(`/api/v1/sessions/${selectedSessionId}/graph`).then(res => res.json()),
+                    fetch('/api/v1/events').then(res => res.json())
+                ]).then(([links, events]) => {
+                    const dagTree = document.getElementById('dag-tree');
+                    if (!links || links.length === 0) {
+                        dagTree.innerHTML = '<div style="font-size: 0.75rem; opacity: 0.5;">No causal graph links recorded for this session.</div>';
+                    } else {
+                        dagTree.innerHTML = renderGraph(links, events, sessionsList, selectedSessionId);
+                    }
+                }).catch(() => {});
+
+                // Fetch correlation
+                fetch(`/api/v1/sessions/${selectedSessionId}/correlation`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.impactSummary) {
+                            document.getElementById('correlation-summary').innerText = data.impactSummary;
+                            const actionsList = document.getElementById('correlation-actions');
+                            if (data.actions && data.actions.length > 0) {
+                                actionsList.innerHTML = data.actions.map(a => `
+                                    <li class="correlation-action-item">${escapeHtml(a)}</li>
+                                `).join('');
+                            } else {
+                                actionsList.innerHTML = '<li class="correlation-action-item">No actions attributed to this session.</li>';
+                            }
+                            document.getElementById('correlation-panel').style.display = 'block';
+                        } else {
+                            document.getElementById('correlation-panel').style.display = 'none';
+                        }
+                    }).catch(() => {});
+            } else {
+                document.getElementById('dag-tree').innerHTML = '<div style="font-size: 0.75rem; opacity: 0.5;">No active session selected. Select a session above to view its causal DAG.</div>';
+                document.getElementById('correlation-panel').style.display = 'none';
+            }
+        }
+
+        function renderGraph(links, events, sessions, rootId, depth = 0) {
+            const children = links.filter(l => l.sourceNodeId === rootId);
+            let html = "";
+            
+            if (depth === 0) {
+                const rootName = getNodeName(rootId, events, sessions);
+                html += `<div class="dag-root">${escapeHtml(rootName)}</div>`;
+            }
+            
+            children.forEach(child => {
+                const childName = getNodeName(child.targetNodeId, events, sessions);
+                const margin = 1 + depth * 1.25;
+                const prefix = "└─ ";
+                html += `
+                    <div class="dag-node" style="margin-left: ${margin}rem;">
+                        ${prefix}<span class="dag-node-type">${escapeHtml(child.relationshipType)}</span> → ${escapeHtml(childName)}
+                    </div>
+                `;
+                html += renderGraph(links, events, sessions, child.targetNodeId, depth + 1);
+            });
+            
+            return html;
+        }
+
+        function getNodeName(nodeId, events, sessions) {
+            if (nodeId.startsWith("file-cluster-")) {
+                return "Consolidated File Writes (Cluster)";
+            }
+            const event = events.find(e => String(e.id) === String(nodeId));
+            if (event) {
+                return `${event.eventType === 'COMMAND_EXECUTED' ? 'Command' : 'File'}: ${event.actionName} [${event.status}]`;
+            }
+            const session = sessions.find(s => s.id === nodeId);
+            if (session) {
+                return `Prompt: "${session.prompt}"`;
+            }
+            return `Node: ${nodeId}`;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        document.getElementById('session-select').addEventListener('change', () => {
+            syncDashboard();
+        });
+
+        setInterval(syncDashboard, 2000);
+        syncDashboard();
+    </script>
+</body>
+</html>

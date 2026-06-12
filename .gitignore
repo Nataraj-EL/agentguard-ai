@@ -1,0 +1,40 @@
+# Target build directory
+target/
+backend/target/
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+logs/
+*.log.*
+
+# Database files
+*.db
+agentguard.db
+
+# Environment/Secret configurations
+.env
+.env.*
+
+# IDE and Project metadata
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+.classpath
+.project
+.settings/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Portable runtime environment
+portable-env/
+
+# Node.js dependencies
+node_modules/
+desktop-agent/node_modules/
